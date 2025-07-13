@@ -79,6 +79,7 @@ interface AppProps {
   config: Config;
   settings: LoadedSettings;
   startupWarnings?: string[];
+  initialHistory?: HistoryItem[];
 }
 
 export const AppWrapper = (props: AppProps) => (
@@ -87,7 +88,7 @@ export const AppWrapper = (props: AppProps) => (
   </SessionStatsProvider>
 );
 
-const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
+const App = ({ config, settings, startupWarnings = [], history: initialHistory = [] }: AppProps) => {
   useBracketedPaste();
   const [updateMessage, setUpdateMessage] = useState<string | null>(null);
   const { stdout } = useStdout();
@@ -96,7 +97,7 @@ const App = ({ config, settings, startupWarnings = [] }: AppProps) => {
     checkForUpdates().then(setUpdateMessage);
   }, []);
 
-  const { history, addItem, clearItems, loadHistory } = useHistory();
+  const { history, addItem, clearItems, loadHistory } = useHistory(initialHistory);
   const {
     consoleMessages,
     handleNewMessage,

@@ -4,10 +4,7 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import {
-  ToolCallConfirmationDetails,
-  ToolResultDisplay,
-} from '@google/gemini-cli-core';
+import { ToolCallConfirmationDetails, ToolResultDisplay, HistoryItem, HistoryItemWithoutId } from '@google/gemini-cli-core';
 
 // Only defining the state enum needed by the UI
 export enum StreamingState {
@@ -58,98 +55,7 @@ export interface CompressionProps {
   newTokenCount: number | null;
 }
 
-export interface HistoryItemBase {
-  text?: string; // Text content for user/gemini/info/error messages
-}
 
-export type HistoryItemUser = HistoryItemBase & {
-  type: 'user';
-  text: string;
-};
-
-export type HistoryItemGemini = HistoryItemBase & {
-  type: 'gemini';
-  text: string;
-};
-
-export type HistoryItemGeminiContent = HistoryItemBase & {
-  type: 'gemini_content';
-  text: string;
-};
-
-export type HistoryItemInfo = HistoryItemBase & {
-  type: 'info';
-  text: string;
-};
-
-export type HistoryItemError = HistoryItemBase & {
-  type: 'error';
-  text: string;
-};
-
-export type HistoryItemAbout = HistoryItemBase & {
-  type: 'about';
-  cliVersion: string;
-  osVersion: string;
-  sandboxEnv: string;
-  modelVersion: string;
-  selectedAuthType: string;
-  gcpProject: string;
-};
-
-export type HistoryItemStats = HistoryItemBase & {
-  type: 'stats';
-  duration: string;
-};
-
-export type HistoryItemModelStats = HistoryItemBase & {
-  type: 'model_stats';
-};
-
-export type HistoryItemToolStats = HistoryItemBase & {
-  type: 'tool_stats';
-};
-
-export type HistoryItemQuit = HistoryItemBase & {
-  type: 'quit';
-  duration: string;
-};
-
-export type HistoryItemToolGroup = HistoryItemBase & {
-  type: 'tool_group';
-  tools: IndividualToolCallDisplay[];
-};
-
-export type HistoryItemUserShell = HistoryItemBase & {
-  type: 'user_shell';
-  text: string;
-};
-
-export type HistoryItemCompression = HistoryItemBase & {
-  type: 'compression';
-  compression: CompressionProps;
-};
-
-// Using Omit<HistoryItem, 'id'> seems to have some issues with typescript's
-// type inference e.g. historyItem.type === 'tool_group' isn't auto-inferring that
-// 'tools' in historyItem.
-// Individually exported types extending HistoryItemBase
-export type HistoryItemWithoutId =
-  | HistoryItemUser
-  | HistoryItemUserShell
-  | HistoryItemGemini
-  | HistoryItemGeminiContent
-  | HistoryItemInfo
-  | HistoryItemError
-  | HistoryItemAbout
-  | HistoryItemToolGroup
-  | HistoryItemStats
-  | HistoryItemModelStats
-  | HistoryItemToolStats
-  | HistoryItemQuit
-  | HistoryItemCompression;
-
-export type HistoryItem = HistoryItemWithoutId & { id: number };
 
 // Message types used by internal command feedback (subset of HistoryItem types)
 export enum MessageType {

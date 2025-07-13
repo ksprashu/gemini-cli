@@ -26,6 +26,7 @@ import { getUserStartupWarnings } from './utils/userStartupWarnings.js';
 import { runNonInteractive } from './nonInteractiveCli.js';
 import { loadExtensions, Extension } from './config/extension.js';
 import { cleanupCheckpoints } from './utils/cleanup.js';
+import { saveSessionState, loadSessionState } from './utils/session.js';
 import {
   ApprovalMode,
   Config,
@@ -102,6 +103,7 @@ export async function main() {
 
   const extensions = loadExtensions(workspaceRoot);
   const config = await loadCliConfig(settings.merged, extensions, sessionId);
+  const history = await loadSessionState(config);
 
   // Set a default auth type if one isn't set for a couple of known cases.
   if (!settings.merged.selectedAuthType) {
@@ -178,6 +180,7 @@ export async function main() {
           config={config}
           settings={settings}
           startupWarnings={startupWarnings}
+          initialHistory={history}
         />
       </React.StrictMode>,
       { exitOnCtrlC: false },
@@ -217,6 +220,7 @@ function setWindowTitle(title: string, settings: LoadedSettings) {
     process.stdout.write(`\x1b]2; Gemini - ${title} \x07`);
 
     process.on('exit', () => {
+      saveSessionState();
       process.stdout.write(`\x1b]2;\x07`);
     });
   }
