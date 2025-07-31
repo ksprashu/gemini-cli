@@ -12,6 +12,7 @@ import {
   isEnabled,
   discoverTools,
   discoverPrompts,
+  resolveHeaders,
 } from './mcp-client.js';
 import { SSEClientTransport } from '@modelcontextprotocol/sdk/client/sse.js';
 import * as SdkClientStdioLib from '@modelcontextprotocol/sdk/client/stdio.js';
@@ -398,6 +399,115 @@ describe('mcp-client', () => {
       expect(isEnabled(namelessFuncDecl, serverName, mcpServerConfig)).toBe(
         false,
       );
+    });
+  });
+  describe('resolveHeaders', () => {
+    const originalEnv = process.env;
+
+    beforeEach(() => {
+      vi.resetModules();
+      process.env = {};
+    });
+
+    afterEach(() => {
+      process.env = originalEnv;
+    });
+
+    it('should return undefined if no headers are provided', () => {
+      expect(resolveHeaders(undefined)).toBeUndefined();
+    });
+
+    it('should resolve environment variables in header values', () => {
+      process.env.MY_TOKEN = 'my-secret-token';
+      const headers = {
+        Authorization: 'Bearer $MY_TOKEN',
+        'X-Another-Header': 'some-value',
+      };
+      const resolved = resolveHeaders(headers);
+      expect(resolved).toEqual({
+        Authorization: 'Bearer my-secret-token',
+        'X-Another-Header': 'some-value',
+      });
+    });
+
+    it('should resolve environment variables with curly braces', () => {
+      process.env.MY_TOKEN = 'my-secret-token';
+      const headers = {
+        Authorization: 'Bearer ${MY_TOKEN}',
+      };
+      const resolved = resolveHeaders(headers);
+      expect(resolved).toEqual({
+        Authorization: 'Bearer my-secret-token',
+      });
+    });
+
+    it('should handle multiple environment variables in a single header', () => {
+      process.env.VAR1 = 'value1';
+      process.env.VAR2 = 'value2';
+      const headers = {
+        'X-Custom-Header': '$VAR1-$VAR2',
+      };
+      const resolved = resolveHeaders(headers);
+      expect(resolved).toEqual({
+        'X-Custom-Header': 'value1-value2',
+      });
+    });
+
+    it('should handle undefined environment variables', () => {
+      const headers = {
+        Authorization: 'Bearer $UNDEFINED_VAR',
+      };
+      const resolved = resolveHeaders(headers);
+      expect(resolved).toEqual({
+        Authorization: 'Bearer ',
+      });
+    });
+
+    it('should return an empty object if headers are empty', () => {
+      const headers = {};
+      const resolved = resolveHeaders(headers);
+      expect(resolved).toEqual({});
+    });
+
+    it('should pass through headers with no variables', () => {
+      const headers = {
+        Authorization: 'Bearer my-secret-token',
+        'X-Another-Header': 'some-value',
+      };
+      const resolved = resolveHeaders(headers);
+      expect(resolved).toEqual(headers);
+    });
+
+    it('should handle environment variables set to an empty string', () => {
+      process.env.EMPTY_VAR = '';
+      const headers = {
+        Authorization: 'Bearer $EMPTY_VAR',
+      };
+      const resolved = resolveHeaders(headers);
+      expect(resolved).toEqual({
+        Authorization: 'Bearer ',
+      });
+    });
+
+    it('should handle case-insensitive environment variables', () => {
+      process.env.my_token = 'my-secret-token';
+      const headers = {
+        Authorization: 'Bearer $my_token',
+      };
+      const resolved = resolveHeaders(headers);
+      expect(resolved).toEqual({
+        Authorization: 'Bearer my-secret-token',
+      });
+    });
+
+    it('should handle a standalone dollar sign', () => {
+      const headers = {
+        Authorization: 'Bearer $ not a var',
+      };
+      const resolved = resolveHeaders(headers);
+      expect(resolved).toEqual({
+        Authorization: 'Bearer $ not a var',
+      });
     });
   });
 });

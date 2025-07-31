@@ -989,18 +989,19 @@ export async function createTransport(
 
   if (mcpServerConfig.httpUrl) {
     const transportOptions: StreamableHTTPClientTransportOptions = {};
+    const resolvedHeaders = resolveHeaders(mcpServerConfig.headers);
 
     // Set up headers with OAuth token if available
     if (hasOAuthConfig && accessToken) {
       transportOptions.requestInit = {
         headers: {
-          ...mcpServerConfig.headers,
+          ...resolvedHeaders,
           Authorization: `Bearer ${accessToken}`,
         },
       };
     } else if (mcpServerConfig.headers) {
       transportOptions.requestInit = {
-        headers: mcpServerConfig.headers,
+        headers: resolvedHeaders,
       };
     }
 
@@ -1012,18 +1013,19 @@ export async function createTransport(
 
   if (mcpServerConfig.url) {
     const transportOptions: SSEClientTransportOptions = {};
+    const resolvedHeaders = resolveHeaders(mcpServerConfig.headers);
 
     // Set up headers with OAuth token if available
     if (hasOAuthConfig && accessToken) {
       transportOptions.requestInit = {
         headers: {
-          ...mcpServerConfig.headers,
+          ...resolvedHeaders,
           Authorization: `Bearer ${accessToken}`,
         },
       };
     } else if (mcpServerConfig.headers) {
       transportOptions.requestInit = {
-        headers: mcpServerConfig.headers,
+        headers: resolvedHeaders,
       };
     }
 
@@ -1056,6 +1058,24 @@ export async function createTransport(
   throw new Error(
     `Invalid configuration: missing httpUrl (for Streamable HTTP), url (for SSE), and command (for stdio).`,
   );
+}
+
+/** Visible for testing */
+export function resolveHeaders(
+  headers: Record<string, string> | undefined,
+): Record<string, string> | undefined {
+  if (!headers) {
+    return undefined;
+  }
+
+  const resolvedHeaders: Record<string, string> = {};
+  for (const [key, value] of Object.entries(headers)) {
+    resolvedHeaders[key] = value.replace(
+      /\$(\w+)|\${(\w+)}/g,
+      (_, a, b) => process.env[a || b] || '',
+    );
+  }
+  return resolvedHeaders;
 }
 
 /** Visible for testing */
