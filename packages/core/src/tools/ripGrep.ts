@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { EOL } from 'node:os';
 import { spawn } from 'node:child_process';
-import { downloadRipGrep } from '@joshua.litt/get-ripgrep';
+import { downloadRipGrep } from '@vscode/ripgrep';
 import type { ToolInvocation, ToolResult } from './tools.js';
 import { BaseDeclarativeTool, BaseToolInvocation, Kind } from './tools.js';
 import { SchemaValidator } from '../utils/schemaValidator.js';
@@ -333,7 +333,7 @@ class GrepToolInvocation extends BaseToolInvocation<
           options.signal.removeEventListener('abort', cleanup);
           reject(
             new Error(
-              `Failed to start ripgrep: ${err.message}. Please ensure @lvce-editor/ripgrep is properly installed.`,
+              `Failed to start ripgrep: ${err.message}. Please ensure @vscode/ripgrep is properly installed.`,
             ),
           );
         });
