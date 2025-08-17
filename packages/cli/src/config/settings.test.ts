@@ -467,6 +467,7 @@ describe('Settings Loading and Merging', () => {
       );
 
       const settings = loadSettings(MOCK_WORKSPACE_DIR);
+
       expect(settings.user.settings.excludedProjectEnvVars).toEqual([
         'DEBUG',
         'NODE_ENV',
