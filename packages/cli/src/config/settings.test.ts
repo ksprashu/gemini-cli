@@ -6,8 +6,6 @@
 
 /// <reference types="vitest/globals" />
 
-const MOCK_HOME_DIR = '/mock/home/user';
-
 // Mock 'os' first.
 import * as osActual from 'node:os'; // Import for type info for the mock factory
 
@@ -15,7 +13,7 @@ vi.mock('os', async (importOriginal) => {
   const actualOs = await importOriginal<typeof osActual>();
   return {
     ...actualOs,
-    homedir: vi.fn(() => MOCK_HOME_DIR),
+    homedir: vi.fn(() => '/mock/home/user'),
     platform: vi.fn(() => 'linux'),
   };
 });
@@ -112,7 +110,7 @@ describe('Settings Loading and Merging', () => {
     mockFsMkdirSync = vi.mocked(fs.mkdirSync);
     mockStripJsonComments = vi.mocked(stripJsonComments);
 
-    vi.mocked(osActual.homedir).mockReturnValue(MOCK_HOME_DIR);
+    vi.mocked(osActual.homedir).mockReturnValue('/mock/home/user');
     (mockStripJsonComments as unknown as Mock).mockImplementation(
       (jsonString: string) => jsonString,
     );
@@ -2177,6 +2175,7 @@ describe('Settings Loading and Merging', () => {
   describe('loadEnvironment', () => {
     const MOCK_CWD = '/mock/home/user/codespace/workspace';
     const MOCK_PARENT_DIR = '/mock/home/user/codespace';
+    const MOCK_HOME_DIR = '/mock/home/user';
     const MOCK_ENV_PATH = `${MOCK_CWD}/.env`;
     const MOCK_GEMINI_ENV_PATH = `${MOCK_CWD}/.gemini/.env`;
     const MOCK_PARENT_ENV_PATH = `${MOCK_PARENT_DIR}/.env`;
