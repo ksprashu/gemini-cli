@@ -66,6 +66,7 @@ import {
   type Settings,
   SettingScope,
   loadEnvironment,
+  setUpCloudShellEnvironment,
 } from './settings.js';
 import { FatalConfigError, GEMINI_DIR } from '@google/gemini-cli-core';
 
@@ -2352,6 +2353,64 @@ describe('Settings Loading and Merging', () => {
       expect(process.env.DEBUG).toBeUndefined();
       expect(process.env.DEBUG_MODE).toBeUndefined();
       expect(process.env.GEMINI_API_KEY).toBe('test-key');
+    });
+  });
+
+  describe('setUpCloudShellEnvironment', () => {
+    const MOCK_ENV_PATH = '/mock/workspace/.env';
+
+    beforeEach(() => {
+      vi.mocked(fs.existsSync).mockReturnValue(false);
+      vi.mocked(fs.readFileSync).mockReturnValue('');
+      vi.mocked(dotenvxActual.parse).mockReturnValue({});
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+      vi.unstubAllEnvs();
+    });
+
+    it('should set GOOGLE_CLOUD_PROJECT from .env file if it exists', () => {
+      vi.stubEnv('GOOGLE_CLOUD_PROJECT', 'pre-existing_value');
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      vi.mocked(dotenvxActual.parse).mockReturnValue({
+        GOOGLE_CLOUD_PROJECT: 'value_from_env_file',
+      });
+
+      setUpCloudShellEnvironment(MOCK_ENV_PATH);
+
+      expect(fs.readFileSync).toHaveBeenCalledWith(MOCK_ENV_PATH);
+      expect(process.env.GOOGLE_CLOUD_PROJECT).toBe('value_from_env_file');
+    });
+
+    it('should set default GOOGLE_CLOUD_PROJECT if not in .env file', () => {
+      vi.stubEnv('GOOGLE_CLOUD_PROJECT', 'pre-existing_value');
+      vi.mocked(fs.existsSync).mockReturnValue(true);
+      // dotenvxActual.parse is mocked to return an empty object by default
+      vi.mocked(dotenvxActual.parse).mockReturnValue({
+        SOME_OTHER_VAR: 'some_value',
+      });
+
+      setUpCloudShellEnvironment(MOCK_ENV_PATH);
+
+      expect(process.env.GOOGLE_CLOUD_PROJECT).toBe('cloudshell-gca');
+    });
+
+    it('should set default GOOGLE_CLOUD_PROJECT if .env file does not exist', () => {
+      vi.stubEnv('GOOGLE_CLOUD_PROJECT', 'pre-existing_value');
+      // fs.existsSync is mocked to return false by default
+
+      setUpCloudShellEnvironment(MOCK_ENV_PATH);
+
+      expect(process.env.GOOGLE_CLOUD_PROJECT).toBe('cloudshell-gca');
+    });
+
+    it('should set default GOOGLE_CLOUD_PROJECT if env file path is null', () => {
+      vi.stubEnv('GOOGLE_CLOUD_PROJECT', 'pre-existing_value');
+
+      setUpCloudShellEnvironment(null);
+
+      expect(process.env.GOOGLE_CLOUD_PROJECT).toBe('cloudshell-gca');
     });
   });
 });
