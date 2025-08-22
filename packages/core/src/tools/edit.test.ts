@@ -26,6 +26,10 @@ vi.mock('../utils/editor.js', () => ({
   openDiff: mockOpenDiff,
 }));
 
+vi.mock('../telemetry/loggers.js', () => ({
+  logFileOperation: vi.fn(),
+}));
+
 import { describe, it, expect, beforeEach, afterEach, vi, Mock } from 'vitest';
 import { applyReplacement, EditTool, EditToolParams } from './edit.js';
 import { FileDiff, ToolConfirmationOutcome } from './tools.js';
@@ -395,13 +399,24 @@ describe('EditTool', () => {
       });
     });
 
-    it('should throw error if params are invalid', async () => {
+    it('should throw error if file path is not absolute', async () => {
       const params: EditToolParams = {
         file_path: 'relative.txt',
         old_string: 'old',
         new_string: 'new',
       };
       expect(() => tool.build(params)).toThrow(/File path must be absolute/);
+    });
+
+    it('should throw error if file path is empty', async () => {
+      const params: EditToolParams = {
+        file_path: '',
+        old_string: 'old',
+        new_string: 'new',
+      };
+      expect(() => tool.build(params)).toThrow(
+        /The 'file_path' parameter must be non-empty./,
+      );
     });
 
     it('should edit an existing file and return diff with fileName', async () => {
