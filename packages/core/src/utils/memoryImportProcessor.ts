@@ -118,14 +118,21 @@ function findImports(
     // Extract the path (everything after @)
     const importPath = content.slice(i + 1, j);
 
-    // Basic validation (must be an explicit path or not contain a slash)
-    if (
-      importPath.length > 0 &&
-      (importPath.startsWith('./') ||
-        importPath.startsWith('../') ||
-        importPath.startsWith('/') ||
-        !importPath.includes('/'))
-    ) {
+    // A valid import path is one of the following:
+    // 1. An explicit relative or absolute path.
+    // 2. A path without slashes (e.g., @file.md).
+    // 3. A path with slashes that has a file extension in the final segment
+    //    (e.g., @folder/file.md), to distinguish from npm packages.
+    const hasSlash = importPath.includes('/');
+    const hasExtension = path.basename(importPath).includes('.');
+    const isValid =
+      importPath.startsWith('./') ||
+      importPath.startsWith('../') ||
+      importPath.startsWith('/') ||
+      !hasSlash ||
+      (hasSlash && hasExtension);
+
+    if (importPath.length > 0 && isValid) {
       imports.push({
         start: i,
         _end: j,

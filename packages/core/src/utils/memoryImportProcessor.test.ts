@@ -463,6 +463,38 @@ describe('memoryImportProcessor', () => {
       expect(console.error).not.toHaveBeenCalled();
     });
 
+    it('should handle subdirectory imports with extensions but ignore those without', async () => {
+      const content =
+        'Import with extension: @foo/bar.md and without: @foo/bar';
+      const projectRoot = testPath('test', 'project');
+      const basePath = testPath(projectRoot, 'src');
+      const importedContent = 'Subdirectory content';
+
+      mockedFs.access.mockResolvedValue(undefined);
+      mockedFs.readFile.mockResolvedValueOnce(importedContent);
+
+      const result = await processImports(
+        content,
+        basePath,
+        true,
+        undefined,
+        projectRoot,
+      );
+
+      // Verify the valid import was processed
+      expect(result.content).toContain(importedContent);
+      expect(result.content).toContain('<!-- Imported from: foo/bar.md -->');
+
+      // Verify the invalid import was ignored
+      expect(result.content).toContain('@foo/bar');
+      expect(result.content).not.toContain('<!-- Imported from: foo/bar -->');
+      expect(mockedFs.readFile).toHaveBeenCalledTimes(1);
+      expect(mockedFs.readFile).toHaveBeenCalledWith(
+        path.resolve(basePath, 'foo/bar.md'),
+        'utf-8',
+      );
+    });
+
     it('should handle nested tokens and non-unique content correctly', async () => {
       // This test verifies the robust findCodeRegions implementation
       // that recursively walks the token tree and handles non-unique content
