@@ -385,6 +385,84 @@ describe('memoryImportProcessor', () => {
       );
     });
 
+    it('should not treat npm-style packages in code blocks as imports', async () => {
+      const content = [
+        '*   **Frontend:** `vitest` is used for testing. Run with `pnpm -F @google-cloud-pulse/frontend test`.',
+        '*   **Backend:** `jest` is used for testing. Run with `pnpm -F @google-cloud-pulse/backend test`.',
+      ].join('\n');
+      const projectRoot = testPath('test', 'project');
+      const basePath = testPath(projectRoot, 'src');
+
+      const result = await processImports(
+        content,
+        basePath,
+        true,
+        undefined,
+        projectRoot,
+      );
+
+      // No imports should be processed
+      expect(mockedFs.readFile).not.toHaveBeenCalled();
+
+      // The original content should be unchanged
+      expect(result.content).toBe(content);
+
+      // No error messages should be logged
+      expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it('should not treat python decorators in code blocks as imports', async () => {
+      const content = [
+        '```python',
+        '@app.route("/api")',
+        'def my_api():',
+        '  return "OK",',
+        '```',
+      ].join('\n');
+      const projectRoot = testPath('test', 'project');
+      const basePath = testPath(projectRoot, 'src');
+
+      const result = await processImports(
+        content,
+        basePath,
+        true,
+        undefined,
+        projectRoot,
+      );
+
+      // No imports should be processed
+      expect(mockedFs.readFile).not.toHaveBeenCalled();
+
+      // The original content should be unchanged
+      expect(result.content).toBe(content);
+
+      // No error messages should be logged
+      expect(console.error).not.toHaveBeenCalled();
+    });
+
+    it('should not treat email addresses as imports', async () => {
+      const content = 'Contact us at contact@example.com';
+      const projectRoot = testPath('test', 'project');
+      const basePath = testPath(projectRoot, 'src');
+
+      const result = await processImports(
+        content,
+        basePath,
+        true,
+        undefined,
+        projectRoot,
+      );
+
+      // No imports should be processed
+      expect(mockedFs.readFile).not.toHaveBeenCalled();
+
+      // The original content should be unchanged
+      expect(result.content).toBe(content);
+
+      // No error messages should be logged
+      expect(console.error).not.toHaveBeenCalled();
+    });
+
     it('should handle nested tokens and non-unique content correctly', async () => {
       // This test verifies the robust findCodeRegions implementation
       // that recursively walks the token tree and handles non-unique content
@@ -416,7 +494,6 @@ describe('memoryImportProcessor', () => {
 
       // Should preserve imports inside inline code (both occurrences)
       expect(result.content).toContain('`inline code @./should-not-import.md`');
-
       // Should not have processed the imports inside code regions
       expect(result.content).not.toContain(
         '<!-- Imported from: ./should-not-import.md -->',

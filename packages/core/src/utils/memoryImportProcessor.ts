@@ -118,12 +118,13 @@ function findImports(
     // Extract the path (everything after @)
     const importPath = content.slice(i + 1, j);
 
-    // Basic validation (starts with ./ or / or letter)
+    // Basic validation (must be an explicit path or not contain a slash)
     if (
       importPath.length > 0 &&
-      (importPath[0] === '.' ||
-        importPath[0] === '/' ||
-        isLetter(importPath[0]))
+      (importPath.startsWith('./') ||
+        importPath.startsWith('../') ||
+        importPath.startsWith('/') ||
+        !importPath.includes('/'))
     ) {
       imports.push({
         start: i,
@@ -140,14 +141,6 @@ function findImports(
 
 function isWhitespace(char: string): boolean {
   return char === ' ' || char === '\t' || char === '\n' || char === '\r';
-}
-
-function isLetter(char: string): boolean {
-  const code = char.charCodeAt(0);
-  return (
-    (code >= 65 && code <= 90) || // A-Z
-    (code >= 97 && code <= 122)
-  ); // a-z
 }
 
 function findCodeRegions(content: string): Array<[number, number]> {
