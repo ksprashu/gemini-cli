@@ -463,6 +463,29 @@ describe('memoryImportProcessor', () => {
       expect(console.error).not.toHaveBeenCalled();
     });
 
+    it('should not treat decorators as imports', async () => {
+      const content = 'This is a decorator @my-decorator';
+      const projectRoot = testPath('test', 'project');
+      const basePath = testPath(projectRoot, 'src');
+
+      const result = await processImports(
+        content,
+        basePath,
+        true,
+        undefined,
+        projectRoot,
+      );
+
+      // No imports should be processed
+      expect(mockedFs.readFile).not.toHaveBeenCalled();
+
+      // The original content should be unchanged
+      expect(result.content).toBe(content);
+
+      // No error messages should be logged
+      expect(console.error).not.toHaveBeenCalled();
+    });
+
     it('should handle subdirectory imports with extensions but ignore those without', async () => {
       const content =
         'Import with extension: @foo/bar.md and without: @foo/bar';

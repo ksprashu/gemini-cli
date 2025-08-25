@@ -119,9 +119,8 @@ function findImports(
     const importPath = content.slice(i + 1, j);
 
     // A valid import path is one of the following:
-    // 1. An explicit relative or absolute path.
-    // 2. A path without slashes (e.g., @file.md).
-    // 3. A path with slashes that has a file extension in the final segment
+    // 1. An explicit relative or absolute path (eg: ./.gemini/FILE.md).
+    // 2. A path with or wihout slashes that has a file extension in the final segment
     //    (e.g., @folder/file.md), to distinguish from npm packages.
     const hasExtension = path.basename(importPath).includes('.');
     const isValid =
