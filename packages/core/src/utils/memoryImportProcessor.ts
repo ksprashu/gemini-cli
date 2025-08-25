@@ -123,14 +123,12 @@ function findImports(
     // 2. A path without slashes (e.g., @file.md).
     // 3. A path with slashes that has a file extension in the final segment
     //    (e.g., @folder/file.md), to distinguish from npm packages.
-    const hasSlash = importPath.includes('/');
     const hasExtension = path.basename(importPath).includes('.');
     const isValid =
       importPath.startsWith('./') ||
       importPath.startsWith('../') ||
       importPath.startsWith('/') ||
-      !hasSlash ||
-      (hasSlash && hasExtension);
+      hasExtension;
 
     if (importPath.length > 0 && isValid) {
       imports.push({
