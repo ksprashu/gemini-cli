@@ -62,7 +62,6 @@ import {
   migrateSettingsToV1,
   needsMigration,
   type Settings,
-  SettingScope,
   loadEnvironment,
   setUpCloudShellEnvironment,
 } from './settings.js';
@@ -2181,7 +2180,10 @@ describe('Settings Loading and Merging', () => {
     const MOCK_GEMINI_ENV_PATH = `${MOCK_CWD}/.gemini/.env`;
     const MOCK_PARENT_ENV_PATH = `${MOCK_PARENT_DIR}/.env`;
     const MOCK_HOME_ENV_PATH = `${MOCK_HOME_DIR}/.env`;
-    const MOCK_SETTINGS_PATH = `${MOCK_CWD}/.gemini/settings.json`;
+    const MOCK_DEFAULT_SETTINGS = {
+      isFolderTrustEnabled: true,
+      isWorkspaceTrustedValue: true,
+    };
 
     beforeEach(() => {
       vi.spyOn(process, 'cwd').mockReturnValue(MOCK_CWD);
@@ -2211,7 +2213,7 @@ describe('Settings Loading and Merging', () => {
         parsed: mockParsedEnv,
       });
 
-      loadEnvironment();
+      loadEnvironment(MOCK_DEFAULT_SETTINGS);
 
       expect(dotenvxActual.config).toHaveBeenCalledWith({
         path: MOCK_ENV_PATH,
@@ -2227,7 +2229,7 @@ describe('Settings Loading and Merging', () => {
         parsed: mockParsedEnv,
       });
 
-      loadEnvironment();
+      loadEnvironment(MOCK_DEFAULT_SETTINGS);
 
       expect(dotenvxActual.config).toHaveBeenCalledWith({
         path: MOCK_ENV_PATH,
@@ -2243,13 +2245,15 @@ describe('Settings Loading and Merging', () => {
         parsed: mockParsedEnv,
       });
 
-      const mockSettings = {
-        excludedProjectEnvVars: ['EXCLUDED_VAR'],
+      const mockSettings: Settings = {
+        advanced: {
+          excludedEnvVars: ['EXCLUDED_VAR'],
+        },
       };
 
       loadEnvironment(mockSettings);
 
-      expect(process.env.EXCLUDED_VAR).toBeUndefined();
+      expect(process.env['EXCLUDED_VAR']).toBeUndefined();
     });
 
     it('should not crash if dotenvxActual.config throws an error', () => {
@@ -2258,29 +2262,31 @@ describe('Settings Loading and Merging', () => {
         throw new Error('Parsing error');
       });
 
-      expect(() => loadEnvironment()).not.toThrow();
+      expect(() => loadEnvironment({})).not.toThrow();
     });
 
-    it('should load workspace settings for exclusions if no settings are provided', () => {
-      vi.stubEnv('EXCLUDED_BY_WORKSPACE', undefined);
-      vi.mocked(fs.existsSync).mockImplementation(
-        (p) => p === MOCK_ENV_PATH || p === MOCK_SETTINGS_PATH,
-      );
-
-      const mockSettingsContent = JSON.stringify({
-        excludedProjectEnvVars: ['EXCLUDED_BY_WORKSPACE'],
-      });
-      vi.mocked(fs.readFileSync).mockReturnValue(mockSettingsContent);
-
-      const mockParsedEnv = { EXCLUDED_BY_WORKSPACE: 'should_be_excluded' };
+    it('should use provided settings for exclusions', () => {
+      vi.stubEnv('EXCLUDED_VAR', undefined);
+      vi.stubEnv('INCLUDED_VAR', undefined);
+      vi.mocked(fs.existsSync).mockImplementation((p) => p === MOCK_ENV_PATH);
+      const mockParsedEnv = {
+        EXCLUDED_VAR: 'should_be_excluded',
+        INCLUDED_VAR: 'should_be_included',
+      };
       vi.mocked(dotenvxActual.config).mockReturnValue({
         parsed: mockParsedEnv,
       });
 
-      loadEnvironment();
+      const mockSettings: Settings = {
+        advanced: {
+          excludedEnvVars: ['EXCLUDED_VAR'],
+        },
+      };
 
-      expect(fs.readFileSync).toHaveBeenCalledWith(MOCK_SETTINGS_PATH, 'utf-8');
-      expect(process.env.EXCLUDED_BY_WORKSPACE).toBeUndefined();
+      loadEnvironment(mockSettings);
+
+      expect(process.env['EXCLUDED_VAR']).toBeUndefined();
+      expect(process.env['INCLUDED_VAR']).toBe('should_be_included');
     });
 
     it('should prefer .gemini/.env over .env in the same directory', () => {
@@ -2288,7 +2294,7 @@ describe('Settings Loading and Merging', () => {
         (p) => p === MOCK_ENV_PATH || p === MOCK_GEMINI_ENV_PATH,
       );
 
-      loadEnvironment();
+      loadEnvironment(MOCK_DEFAULT_SETTINGS);
 
       expect(dotenvxActual.config).toHaveBeenCalledWith({
         path: MOCK_GEMINI_ENV_PATH,
@@ -2303,7 +2309,7 @@ describe('Settings Loading and Merging', () => {
         (p) => p === MOCK_PARENT_ENV_PATH,
       );
 
-      loadEnvironment();
+      loadEnvironment(MOCK_DEFAULT_SETTINGS);
 
       expect(dotenvxActual.config).toHaveBeenCalledWith({
         path: MOCK_PARENT_ENV_PATH,
@@ -2315,7 +2321,7 @@ describe('Settings Loading and Merging', () => {
         (p) => p === MOCK_HOME_ENV_PATH,
       );
 
-      loadEnvironment();
+      loadEnvironment(MOCK_DEFAULT_SETTINGS);
 
       expect(dotenvxActual.config).toHaveBeenCalledWith({
         path: MOCK_HOME_ENV_PATH,
@@ -2324,7 +2330,7 @@ describe('Settings Loading and Merging', () => {
 
     it('should not call dotenvxActual.config if no .env file is found', () => {
       // fs.existsSync is already mocked to return false by default
-      loadEnvironment();
+      loadEnvironment(MOCK_DEFAULT_SETTINGS);
       expect(dotenvxActual.config).not.toHaveBeenCalled();
     });
 
@@ -2413,10 +2419,8 @@ describe('Settings Loading and Merging', () => {
       expect(process.env.GOOGLE_CLOUD_PROJECT).toBe('cloudshell-gca');
     });
   });
-});
 
-
-  describe('loadEnvironment:trusted', () => {
+  describe('loadEnvironment: trusted folder', () => {
     function setup({
       isFolderTrustEnabled = true,
       isWorkspaceTrustedValue = true,
@@ -2449,6 +2453,9 @@ describe('Settings Loading and Merging', () => {
           return '{}';
         },
       );
+      vi.mocked(dotenvxActual.config).mockReturnValue({
+        parsed: { TESTTEST: '1234' },
+      });
     }
 
     it('sets environment variables from .env files', () => {
