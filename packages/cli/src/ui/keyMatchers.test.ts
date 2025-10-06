@@ -55,6 +55,7 @@ describe('keyMatchers', () => {
       key.ctrl && key.name === 't',
     [Command.TOGGLE_IDE_CONTEXT_DETAIL]: (key: Key) =>
       key.ctrl && key.name === 'g',
+    [Command.TOGGLE_CONTEXT_VIEW]: (key: Key) => key.ctrl && key.name === 'i',
     [Command.QUIT]: (key: Key) => key.ctrl && key.name === 'c',
     [Command.EXIT]: (key: Key) => key.ctrl && key.name === 'd',
     [Command.SHOW_MORE_LINES]: (key: Key) => key.ctrl && key.name === 's',
@@ -224,6 +225,11 @@ describe('keyMatchers', () => {
       command: Command.TOGGLE_IDE_CONTEXT_DETAIL,
       positive: [createKey('g', { ctrl: true })],
       negative: [createKey('g'), createKey('t', { ctrl: true })],
+    },
+    {
+      command: Command.TOGGLE_CONTEXT_VIEW,
+      positive: [createKey('i', { ctrl: true })],
+      negative: [createKey('i'), createKey('g', { ctrl: true })],
     },
     {
       command: Command.QUIT,

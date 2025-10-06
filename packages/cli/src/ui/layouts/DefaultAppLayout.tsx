@@ -12,9 +12,14 @@ import { DialogManager } from '../components/DialogManager.js';
 import { Composer } from '../components/Composer.js';
 import { ExitWarning } from '../components/ExitWarning.js';
 import { useUIState } from '../contexts/UIStateContext.js';
+import { ContextView } from '../components/ContextView.js';
 
 export const DefaultAppLayout: React.FC = () => {
   const uiState = useUIState();
+
+  if (uiState.showContextView) {
+    return <ContextView contextForModel={uiState.contextForModel} />;
+  }
 
   return (
     <Box flexDirection="column" width="90%">

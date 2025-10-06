@@ -37,6 +37,7 @@ export interface ProQuotaDialogRequest {
 
 import { type UseHistoryManagerReturn } from '../hooks/useHistoryManager.js';
 import { type RestartReason } from '../hooks/useIdeTrustListener.js';
+import type { PartListUnion } from '@google/genai';
 
 export interface UIState {
   history: HistoryItem[];
@@ -82,6 +83,8 @@ export interface UIState {
   filteredConsoleMessages: ConsoleMessageItem[];
   ideContextState: IdeContext | undefined;
   showToolDescriptions: boolean;
+  showContextView: boolean;
+  contextForModel: PartListUnion | null;
   ctrlCPressedOnce: boolean;
   ctrlDPressedOnce: boolean;
   showEscapePrompt: boolean;

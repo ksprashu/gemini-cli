@@ -111,6 +111,9 @@ export const useGeminiStream = (
   const turnCancelledRef = useRef(false);
   const [isResponding, setIsResponding] = useState<boolean>(false);
   const [thought, setThought] = useState<ThoughtSummary | null>(null);
+  const [contextForModel, setContextForModel] = useState<PartListUnion | null>(
+    null,
+  );
   const [pendingHistoryItem, pendingHistoryItemRef, setPendingHistoryItem] =
     useStateAndRef<HistoryItemWithoutId | null>(null);
   const processedMemoryToolsRef = useRef<Set<string>>(new Set());
@@ -772,6 +775,8 @@ export const useGeminiStream = (
           return;
         }
 
+        setContextForModel(queryToSend);
+
         if (!options?.isContinuation) {
           if (typeof queryToSend === 'string') {
             // logging the text prompts only for now
@@ -1157,5 +1162,6 @@ export const useGeminiStream = (
     handleApprovalModeChange,
     activePtyId,
     loopDetectionConfirmationRequest,
+    contextForModel,
   };
 };

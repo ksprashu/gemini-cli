@@ -575,6 +575,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
     handleApprovalModeChange,
     activePtyId,
     loopDetectionConfirmationRequest,
+    contextForModel,
   } = useGeminiStream(
     config.getGeminiClient(),
     historyManager.history,
@@ -775,6 +776,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
   const [showErrorDetails, setShowErrorDetails] = useState<boolean>(false);
   const [showToolDescriptions, setShowToolDescriptions] =
     useState<boolean>(false);
+  const [showContextView, setShowContextView] = useState<boolean>(false);
 
   const [ctrlCPressedOnce, setCtrlCPressedOnce] = useState(false);
   const ctrlCTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -936,6 +938,8 @@ Logging in with Google... Please restart Gemini CLI to continue.
 
       if (keyMatchers[Command.SHOW_ERROR_DETAILS](key)) {
         setShowErrorDetails((prev) => !prev);
+      } else if (keyMatchers[Command.TOGGLE_CONTEXT_VIEW](key)) {
+        setShowContextView((prev) => !prev);
       } else if (keyMatchers[Command.TOGGLE_TOOL_DESCRIPTIONS](key)) {
         const newValue = !showToolDescriptions;
         setShowToolDescriptions(newValue);
@@ -1107,6 +1111,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
       isTrustedFolder,
       constrainHeight,
       showErrorDetails,
+      showContextView,
       filteredConsoleMessages,
       ideContextState,
       showToolDescriptions,
@@ -1124,6 +1129,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
       currentModel,
       userTier,
       proQuotaRequest,
+      contextForModel,
       contextFileNames,
       errorCount,
       availableTerminalHeight,
@@ -1186,6 +1192,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
       isTrustedFolder,
       constrainHeight,
       showErrorDetails,
+      showContextView,
       filteredConsoleMessages,
       ideContextState,
       showToolDescriptions,
@@ -1202,6 +1209,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
       workspaceExtensions,
       userTier,
       proQuotaRequest,
+      contextForModel,
       contextFileNames,
       errorCount,
       availableTerminalHeight,
