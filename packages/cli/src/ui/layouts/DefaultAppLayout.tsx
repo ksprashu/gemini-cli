@@ -18,7 +18,7 @@ export const DefaultAppLayout: React.FC = () => {
   const uiState = useUIState();
 
   if (uiState.showContextView) {
-    return <ContextView contextForModel={uiState.contextForModel} />;
+    return <ContextView fullContextForView={uiState.fullContextForView} />;
   }
 
   return (

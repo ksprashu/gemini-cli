@@ -85,6 +85,7 @@ export interface UIState {
   showToolDescriptions: boolean;
   showContextView: boolean;
   contextForModel: PartListUnion | null;
+  fullContextForView: object | null;
   ctrlCPressedOnce: boolean;
   ctrlDPressedOnce: boolean;
   showEscapePrompt: boolean;

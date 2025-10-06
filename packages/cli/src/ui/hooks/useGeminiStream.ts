@@ -114,6 +114,9 @@ export const useGeminiStream = (
   const [contextForModel, setContextForModel] = useState<PartListUnion | null>(
     null,
   );
+  const [fullContextForView, setFullContextForView] = useState<object | null>(
+    null,
+  );
   const [pendingHistoryItem, pendingHistoryItemRef, setPendingHistoryItem] =
     useStateAndRef<HistoryItemWithoutId | null>(null);
   const processedMemoryToolsRef = useRef<Set<string>>(new Set());
@@ -776,6 +779,7 @@ export const useGeminiStream = (
         }
 
         setContextForModel(queryToSend);
+        setFullContextForView(geminiClient.getFullContext());
 
         if (!options?.isContinuation) {
           if (typeof queryToSend === 'string') {
@@ -1163,5 +1167,6 @@ export const useGeminiStream = (
     activePtyId,
     loopDetectionConfirmationRequest,
     contextForModel,
+    fullContextForView,
   };
 };

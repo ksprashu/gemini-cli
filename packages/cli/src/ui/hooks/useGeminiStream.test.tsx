@@ -58,6 +58,11 @@ const MockedGeminiClientClass = vi.hoisted(() =>
       recordToolCalls: vi.fn(),
       getConversationFile: vi.fn(),
     });
+    this.getFullContext = vi.fn().mockReturnValue({
+      systemPrompt: 'test system prompt',
+      userMemory: 'test user memory',
+      history: [],
+    });
   }),
 );
 

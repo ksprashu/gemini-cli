@@ -188,6 +188,17 @@ export class GeminiClient {
     this.forceFullIdeContext = true;
   }
 
+  getFullContext(): {
+    systemPrompt: string;
+    userMemory: string;
+    history: Content[];
+  } {
+    const userMemory = this.config.getUserMemory();
+    const systemPrompt = getCoreSystemPrompt(this.config, userMemory);
+    const history = this.getHistory();
+    return { systemPrompt, userMemory, history };
+  }
+
   async setTools(): Promise<void> {
     const toolRegistry = this.config.getToolRegistry();
     const toolDeclarations = toolRegistry.getFunctionDeclarations();

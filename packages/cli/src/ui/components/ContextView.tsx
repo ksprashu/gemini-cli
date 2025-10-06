@@ -5,20 +5,19 @@
  */
 
 import { Box, Text } from 'ink';
-import type { PartListUnion } from '@google/genai';
 
 interface ContextViewProps {
-  contextForModel: PartListUnion | null;
+  fullContextForView: object | null;
 }
 
 export function ContextView(props: ContextViewProps) {
-  const { contextForModel } = props;
+  const { fullContextForView } = props;
 
   return (
     <Box flexDirection="column" borderStyle="round" padding={1}>
-      <Text bold>Context Sent to Model</Text>
+      <Text bold>Full Context Sent to Model</Text>
       <Box marginTop={1}>
-        <Text>{JSON.stringify(contextForModel, null, 2)}</Text>
+        <Text>{JSON.stringify(fullContextForView, null, 2)}</Text>
       </Box>
     </Box>
   );

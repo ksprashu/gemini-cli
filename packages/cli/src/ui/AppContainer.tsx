@@ -576,6 +576,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
     activePtyId,
     loopDetectionConfirmationRequest,
     contextForModel,
+    fullContextForView,
   } = useGeminiStream(
     config.getGeminiClient(),
     historyManager.history,
@@ -1130,6 +1131,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
       userTier,
       proQuotaRequest,
       contextForModel,
+      fullContextForView,
       contextFileNames,
       errorCount,
       availableTerminalHeight,
@@ -1210,6 +1212,7 @@ Logging in with Google... Please restart Gemini CLI to continue.
       userTier,
       proQuotaRequest,
       contextForModel,
+      fullContextForView,
       contextFileNames,
       errorCount,
       availableTerminalHeight,
