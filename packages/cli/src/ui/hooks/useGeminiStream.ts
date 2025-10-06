@@ -724,6 +724,7 @@ export const useGeminiStream = (
       if (toolCallRequests.length > 0) {
         scheduleToolCalls(toolCallRequests, signal);
       }
+      setFullContextForView(geminiClient.getFullContext());
       return StreamProcessingStatus.Completed;
     },
     [
@@ -735,6 +736,7 @@ export const useGeminiStream = (
       handleFinishedEvent,
       handleMaxSessionTurnsEvent,
       handleCitationEvent,
+      geminiClient,
     ],
   );
 
