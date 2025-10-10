@@ -13,18 +13,11 @@ interface ContextViewProps {
 export function ContextView(props: ContextViewProps) {
   const { fullContextForView } = props;
 
-  const replacer = (key: string, value: unknown) => {
-    if (typeof value === 'string') {
-      return value.split('\n');
-    }
-    return value;
-  };
-
   return (
     <Box flexDirection="column" borderStyle="round" padding={1}>
       <Text bold>Full Context Sent to Model</Text>
       <Box marginTop={1}>
-        <Text>{JSON.stringify(fullContextForView, replacer, 2)}</Text>
+        <Text>{JSON.stringify(fullContextForView, null, 2)}</Text>
       </Box>
     </Box>
   );
