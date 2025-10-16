@@ -4,35 +4,42 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { modelCommand } from './modelCommand.js';
 import { type CommandContext } from './types.js';
 import { createMockCommandContext } from '../../test-utils/mockCommandContext.js';
+import { type Config } from '@google/gemini-cli-core';
 
 describe('modelCommand', () => {
   let mockContext: CommandContext;
+  const mockConfig = {
+    setModel: vi.fn(),
+  } as unknown as Config;
 
   beforeEach(() => {
-    mockContext = createMockCommandContext();
+    vi.clearAllMocks();
+    mockContext = createMockCommandContext({
+      services: {
+        config: mockConfig,
+      },
+    });
   });
 
-  it('should return a dialog action to open the model dialog', async () => {
+  it('updates the model when a valid model is provided', async () => {
     if (!modelCommand.action) {
       throw new Error('The model command must have an action.');
     }
 
-    const result = await modelCommand.action(mockContext, '');
+    const testModel = 'gemini-2.5-flash';
+    await modelCommand.action(mockContext, testModel);
 
-    expect(result).toEqual({
-      type: 'dialog',
-      dialog: 'model',
-    });
+    expect(mockConfig.setModel).toHaveBeenCalledWith(testModel);
   });
 
   it('should have the correct name and description', () => {
     expect(modelCommand.name).toBe('model');
     expect(modelCommand.description).toBe(
-      'Opens a dialog to configure the model',
+      'Sets the model to use for the next request (e.g. /model gemini-2.5-flash)',
     );
   });
 });
